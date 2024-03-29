@@ -36,6 +36,44 @@
     rect1.setAttribute('transform', 'translate(' + (-x*zoomLevel+x) + ',' + (-y*zoomLevel+y) + ') scale(' + zoomLevel + ')');
     rect2.setAttribute('transform', 'translate(' + (-x*zoomLevel+x) + ',' + (-y*zoomLevel+y) + ') scale(' + zoomLevel + ')');
   });
+
+
+
+var initialDistance = 0;
+var initialZoomLevel = 1;
+
+svg.addEventListener('touchstart', function(e) {
+  if (e.touches.length == 2) { // Two fingers touching
+    initialDistance = Math.hypot(
+      e.touches[0].pageX - e.touches[1].pageX,
+      e.touches[0].pageY - e.touches[1].pageY
+    );
+    initialZoomLevel = zoomLevel;
+  }
+});
+
+svg.addEventListener('touchmove', function(e) {
+  if (e.touches.length == 2) { // Two fingers touching
+    var distance = Math.hypot(
+      e.touches[0].pageX - e.touches[1].pageX,
+      e.touches[0].pageY - e.touches[1].pageY
+    );
+    zoomLevel = initialZoomLevel * distance / initialDistance;
+
+    // Apply zoom at center of two fingers
+    var x = (e.touches[0].pageX + e.touches[1].pageX) / 2;
+    var y = (e.touches[0].pageY + e.touches[1].pageY) / 2;
+    rect1.setAttribute('transform', 'translate(' + (-x*zoomLevel+x) + ',' + (-y*zoomLevel+y) + ') scale(' + zoomLevel + ')');
+    rect2.setAttribute('transform', 'translate(' + (-x*zoomLevel+x) + ',' + (-y*zoomLevel+y) + ') scale(' + zoomLevel + ')');
+  }
+});
+
+svg.addEventListener('touchend', function(e) {
+  if (e.touches.length < 2) { // Less than two fingers touching
+    initialDistance = 0;
+  }
+});
+
 </script>
 
 </body>
