@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <svg id="mySVG" width="600" height="600" viewBox="0 0 600 600" style="border:1px solid black;">
+        <rect x="60" y="60" width="60" height="60" fill="blue" />
+        <rect x="180" y="60" width="60" height="60" fill="red" />
+        <rect x="300" y="60" width="60" height="60" fill="green" />
+        <circle cx="100" cy="200" r="50" fill="purple" /> <!-- New circle -->
+
+    </svg>
+
+    <script>
+        var svg = document.getElementById('mySVG');
+        
+        var lines = Array.from(svg.getElementsByTagName('line'));
+        var rects = Array.from(svg.getElementsByTagName('rect'));
+        var isMouseDown = false;
+        var mouseDownPos = { x: 0, y: 0 };
+        var rectPos = { x: 0, y: 0 };
+        var selectedRect = null;
+        var viewBoxPos = { x: 0, y: 0 };
+
+        var isDrawing = false;
+        var startDrawPos = { x: 0, y: 0 };
+        var newRect = null;
+        var selectedRects = [];
+
+        var idRec = 1;
+
+
+        function addEventRect(){
+            rects = Array.from(svg.getElementsByTagName('rect'));
+            rects.forEach(function(rect, index) {
+
+                console.log('addEventRect index = ', index);
+
+                if(rect.getAttribute('id') === null){
+                    rect.setAttribute('id', 'rect' + idRec);
+                    idRec++;
+                }
+
+                rect.addEventListener('mousedown', function(e) {
+                    if (e.ctrlKey) {
+
+                        isMouseDown = true;
+                        var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+                        mouseDownPos = { x: e.clientX / svg.clientWidth * viewBox[2] + viewBox[0], y: e.clientY / svg.clientHeight * viewBox[3] + viewBox[1] };
+                        rectPos = { x: parseFloat(rect.getAttribute('x')), y: parseFloat(rect.getAttribute('y')) };
+                        selectedRect = rect;
+                    }
+                    if (e.altKey) {
+
+                        console.log("altKey key ...");
+
+
+                        if (selectedRects.length < 2) {
+
+                            // trước khi push cần kiểm tra xem có id của rect bị trùng không?
+                            var isExist = false;
+                            selectedRects.forEach(function(sRect){
+                                if(sRect.getAttribute('id') === rect.getAttribute('id')){
+                                    isExist = true;
+                                }
+                            });
+
+                            if(!isExist)
+                                selectedRects.push(rect);
+                        }
+
+
+                        if (selectedRects.length === 2) {
+                            console.log('draw line selectedRects = ', selectedRects);
+                            var rect1 = selectedRects[0];
+                            var rect2 = selectedRects[1];
+                            var newLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            newLine.setAttribute('x1', parseFloat(rect1.getAttribute('x')) + 30);
+                            newLine.setAttribute('y1', parseFloat(rect1.getAttribute('y')) + 30);
+                            newLine.setAttribute('x2', parseFloat(rect2.getAttribute('x')) + 30);
+                            newLine.setAttribute('y2', parseFloat(rect2.getAttribute('y')) + 30);
+                            newLine.setAttribute('fromx', rect1.getAttribute('id'));
+                            newLine.setAttribute('tox', rect2.getAttribute('id'));
+                            newLine.setAttribute('stroke', 'black');
+                            svg.appendChild(newLine);
+                            //lines.push(newLine);
+                            lines = Array.from(svg.getElementsByTagName('line'));
+
+                            selectedRects = [];
+                        }
+                    }
+
+                });
+            });
+        }
+
+        addEventRect();
+
+        svg.addEventListener('mousedown', function(e) {
+
+            if (e.shiftKey) {
+                
+                isDrawing = true;
+                var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+                startDrawPos = { x: e.clientX / svg.clientWidth * viewBox[2] + viewBox[0], y: e.clientY / svg.clientHeight * viewBox[3] + viewBox[1] };
+
+                console.log('drawing...', startDrawPos);
+
+                newRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                newRect.setAttribute('x', startDrawPos.x);
+                newRect.setAttribute('y', startDrawPos.y);
+                newRect.setAttribute('width', 10);
+                newRect.setAttribute('height', 10);
+                newRect.setAttribute('fill', 'blue');
+                svg.appendChild(newRect);
+
+                newRect.setAttribute('id', 'rect' + idRec);
+                idRec++;
+
+                addEventRect();
+            }
+            else if (!e.ctrlKey) {
+                isMouseDown = true;
+                var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+                mouseDownPos = { x: e.clientX, y: e.clientY };
+                viewBoxPos = { x: viewBox[0], y: viewBox[1] };
+            }
+        });
+
+        svg.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            var scale = 1 - e.deltaY / 600;
+            var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+            var mouseX = e.clientX / svg.clientWidth * viewBox[2] + viewBox[0];
+            var mouseY = e.clientY / svg.clientHeight * viewBox[3] + viewBox[1];
+            viewBox[2] *= scale;
+            viewBox[3] *= scale;
+            viewBox[0] = mouseX - e.clientX / svg.clientWidth * viewBox[2];
+            viewBox[1] = mouseY - e.clientY / svg.clientHeight * viewBox[3];
+            svg.setAttribute('viewBox', viewBox.join(' '));
+        });
+
+        svg.addEventListener('mousemove', function(e) {
+
+            //Nếu đang vẽ hình chữ nhật
+            if (isDrawing) {
+                console.log('drawing2...', startDrawPos);
+                var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+                var currentPos = { x: e.clientX / svg.clientWidth * viewBox[2] + viewBox[0], y: e.clientY / svg.clientHeight * viewBox[3] + viewBox[1] };
+                newRect.setAttribute('width', Math.abs(currentPos.x - startDrawPos.x));
+                newRect.setAttribute('height', Math.abs(currentPos.y - startDrawPos.y));
+                newRect.setAttribute('x', Math.min(currentPos.x, startDrawPos.x));
+                newRect.setAttribute('y', Math.min(currentPos.y, startDrawPos.y));
+                return;
+            }
+
+            //Nếu không phải là di chuyển hình chữ nhật thì return
+            if (!isMouseDown) return;
+            
+            var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+
+            //Nếu đang di chuyển hình chữ nhật
+            if (selectedRect) {
+                var dx = (e.clientX / svg.clientWidth * viewBox[2] + viewBox[0]) - mouseDownPos.x;
+                var dy = (e.clientY / svg.clientHeight * viewBox[3] + viewBox[1]) - mouseDownPos.y;
+                                
+                var newX = rectPos.x + dx;
+                var newY = rectPos.y + dy;
+                //Làm tròn vị trí theo grid vuông
+                // newX = Math.round((rectPos.x + dx) / 20) * 20;
+                // newY = Math.round((rectPos.y + dy) / 20) * 20;
+                
+                selectedRect.setAttribute('x', newX);
+                selectedRect.setAttribute('y', newY);
+
+                var rectId = selectedRect.getAttribute('id');
+
+                lines.forEach(function(line) {
+                    if (line.getAttribute('fromx') === rectId) {
+                        line.setAttribute('x1', newX + 30);
+                        line.setAttribute('y1', newY + 30);
+                    }
+                    if (line.getAttribute('tox') === rectId) {
+                        line.setAttribute('x2', newX + 30);
+                        line.setAttribute('y2', newY + 30);
+                    }
+                });
+
+            } else 
+            //Nếu đang di chuyển viewbox
+            {
+                var dx = (e.clientX - mouseDownPos.x) / svg.clientWidth * viewBox[2];
+                var dy = (e.clientY - mouseDownPos.y) / svg.clientHeight * viewBox[3];
+                viewBox[0] = viewBoxPos.x - dx;
+                viewBox[1] = viewBoxPos.y - dy;
+                svg.setAttribute('viewBox', viewBox.join(' '));
+            }
+        });
+
+        svg.addEventListener('mouseup', function(e) {
+            isMouseDown = false;
+            selectedRect = null;
+            isDrawing = false;
+        });
+
+        svg.addEventListener('mouseleave', function(e) {
+            isMouseDown = false;
+            selectedRect = null;
+            isDrawing = false;
+        });
+
+        
+        // Add touch events
+        svg.addEventListener('touchstart', start);
+        svg.addEventListener('touchmove', move);
+        svg.addEventListener('touchend', end);
+        
+
+        var initialPinchDistance = null;
+
+    function start(e) {
+        // Existing code...
+
+        // If this is a two-finger touch event, store the initial pinch distance
+        if (e.touches && e.touches.length === 2) {
+            initialPinchDistance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+        }
+    }
+
+    function move(e) {
+        // Existing code...
+
+        // If this is a two-finger touch event, calculate the new pinch distance and adjust the zoom level
+        if (e.touches && e.touches.length === 2) {
+            var newPinchDistance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            var scale = newPinchDistance / initialPinchDistance;
+            // Adjust the zoom level based on the scale
+            // ...
+
+            var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+            var mouseX = e.clientX / svg.clientWidth * viewBox[2] + viewBox[0];
+            var mouseY = e.clientY / svg.clientHeight * viewBox[3] + viewBox[1];
+            viewBox[2] *= scale;
+            viewBox[3] *= scale;
+            viewBox[0] = mouseX - e.clientX / svg.clientWidth * viewBox[2];
+            viewBox[1] = mouseY - e.clientY / svg.clientHeight * viewBox[3];
+            svg.setAttribute('viewBox', viewBox.join(' '));
+        }
+    }
+
+    function end(e) {
+        // Existing code...
+
+        initialPinchDistance = null;
+    }
+
+    </script>
+
+<br>
+<button id="delete_lines">Delete line </button>
+<button id="delete_all_item">Delete all </button>
+
+
+
+<br>
+1. **Vẽ hình chữ nhật**: Nhấn và giữ phím Shift, sau đó di chuyển chuột để vẽ hình chữ nhật. Thả phím Shift để hoàn tất việc vẽ.
+<br>
+2. **Di chuyển hình chữ nhật**: Nhấn Ctr + giữ chuột trên hình chữ nhật mà bạn muốn di chuyển
+<br>
+3. **Vẽ đường nối giữa hai hình chữ nhật**: Nhấn và giữ phím Alt, sau đó click chuột lên hai hình chữ nhật mà bạn muốn nối. Thả phím Ctrl để hoàn tất việc vẽ đường.
+<br>
+4. **Xóa tất cả các đường**: Nhấn nút "Delete line" để xóa tất cả các đường.
+<br>
+5. **Xóa tất cả cả đường cả hình**: Nhấn nút "Delete all" để xóa tất cả cả đường cả hình.
+<br>
+6. **Zoom**: Sử dụng con lăn chuột để phóng to hoặc thu nhỏ. Cuộn lên để phóng to và cuộn xuống để thu nhỏ.
+Lưu ý: Khi di chuyển hình chữ nhật, các đường nối tới hình chữ nhật đó cũng sẽ được di chuyển tương ứng.
+
+<script>
+
+document.getElementById('delete_lines').addEventListener('click', function() {
+    var lines = Array.from(svg.getElementsByTagName('line'));
+    lines.forEach(function(line) {
+        svg.removeChild(line);
+    });
+});
+
+document.getElementById('delete_all_item').addEventListener('click', function() {
+    while (svg.firstChild) {
+        svg.removeChild(svg.firstChild);
+    }
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+    "name": "svg-project",
+    "version": "1.0.0",
+    "description": "SVG Project",
+    "main": "013-vẽ-lại-với-id-done.html",
+    "scripts": {
+        "test": "jest"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "jest": "^27.5.1",
+        "jest-environment-jsdom": "^29.7.0",
+        "jsdom": "^24.0.0"
+    }
+}

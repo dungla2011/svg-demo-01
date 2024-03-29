@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <svg id="mySVG" width="500" height="500" style="border:1px solid black;">
+        <rect id="rect1" x="50" y="50" width="50" height="50" fill="blue" />
+        <rect id="rect2" x="150" y="50" width="50" height="50" fill="red" />
+        <rect id="rect3" x="250" y="50" width="50" height="50" fill="green" />
+    </svg>
+
+    <script>
+        var svg = document.getElementById('mySVG');
+        var rects = Array.from(svg.getElementsByTagName('rect'));
+    
+        var isMouseDown = false;
+        var mouseDownPos = { x: 0, y: 0 };
+        var rectPos = [];
+    
+        function start(e) {
+            isMouseDown = true;
+            mouseDownPos = { x: e.clientX || e.touches[0].clientX, y: e.clientY || e.touches[0].clientY };
+            rectPos = rects.map(function(rect) {
+                return { x: parseFloat(rect.getAttribute('x')), y: parseFloat(rect.getAttribute('y')) };
+            });
+        }
+    
+        function move(e) {
+            if (!isMouseDown) return;
+            var dx = (e.clientX || e.touches[0].clientX) - mouseDownPos.x;
+            var dy = (e.clientY || e.touches[0].clientY) - mouseDownPos.y;
+            rects.forEach(function(rect, i) {
+                rect.setAttribute('x', rectPos[i].x + dx);
+                rect.setAttribute('y', rectPos[i].y + dy);
+            });
+        }
+    
+        function end(e) {
+            isMouseDown = false;
+        }
+    
+        svg.addEventListener('mousedown', start);
+        svg.addEventListener('mousemove', move);
+        svg.addEventListener('mouseup', end);
+        svg.addEventListener('mouseleave', end);
+    
+        // Add touch events
+        svg.addEventListener('touchstart', start);
+        svg.addEventListener('touchmove', move);
+        svg.addEventListener('touchend', end);
+    </script>
+    
+</body>
+</html>

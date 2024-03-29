@@ -5,6 +5,8 @@
         <rect x="60" y="60" width="60" height="60" fill="blue" />
         <rect x="180" y="60" width="60" height="60" fill="red" />
         <rect x="300" y="60" width="60" height="60" fill="green" />
+        <circle cx="100" cy="200" r="50" fill="purple" /> <!-- New circle -->
+
     </svg>
 
     <script>
@@ -165,8 +167,8 @@
                 var newY = rectPos.y + dy;
 
                 //Làm tròn vị trí theo grid vuông
-                newX = Math.round((rectPos.x + dx) / 20) * 20;
-                newY = Math.round((rectPos.y + dy) / 20) * 20;
+                // newX = Math.round((rectPos.x + dx) / 20) * 20;
+                // newY = Math.round((rectPos.y + dy) / 20) * 20;
                 
 
                 selectedRect.setAttribute('x', newX);
