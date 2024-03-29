@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <body>
-    <svg id="mySVG" width="500" height="500" viewBox="0 0 500 500" style="border:1px solid black;">
-        <rect x="50" y="50" width="50" height="50" fill="blue" />
-        <rect x="150" y="50" width="50" height="50" fill="red" />
+    <svg id="mySVG" width="600" height="600" viewBox="0 0 600 600" style="border:1px solid black;">
+        <rect x="60" y="60" width="60" height="60" fill="blue" />
+        <rect x="180" y="60" width="60" height="60" fill="red" />
+        <rect x="300" y="60" width="60" height="60" fill="green" />
     </svg>
 
     <script>
@@ -70,10 +71,10 @@
                             var rect1 = selectedRects[0];
                             var rect2 = selectedRects[1];
                             var newLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                            newLine.setAttribute('x1', parseFloat(rect1.getAttribute('x')) + 25);
-                            newLine.setAttribute('y1', parseFloat(rect1.getAttribute('y')) + 25);
-                            newLine.setAttribute('x2', parseFloat(rect2.getAttribute('x')) + 25);
-                            newLine.setAttribute('y2', parseFloat(rect2.getAttribute('y')) + 25);
+                            newLine.setAttribute('x1', parseFloat(rect1.getAttribute('x')) + 30);
+                            newLine.setAttribute('y1', parseFloat(rect1.getAttribute('y')) + 30);
+                            newLine.setAttribute('x2', parseFloat(rect2.getAttribute('x')) + 30);
+                            newLine.setAttribute('y2', parseFloat(rect2.getAttribute('y')) + 30);
                             newLine.setAttribute('fromx', rect1.getAttribute('id'));
                             newLine.setAttribute('tox', rect2.getAttribute('id'));
                             newLine.setAttribute('stroke', 'black');
@@ -124,7 +125,7 @@
 
         svg.addEventListener('wheel', function(e) {
             e.preventDefault();
-            var scale = 1 - e.deltaY / 500;
+            var scale = 1 - e.deltaY / 600;
             var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
             var mouseX = e.clientX / svg.clientWidth * viewBox[2] + viewBox[0];
             var mouseY = e.clientY / svg.clientHeight * viewBox[3] + viewBox[1];
@@ -164,8 +165,8 @@
                 var newY = rectPos.y + dy;
 
                 //Làm tròn vị trí theo grid vuông
-                newX = Math.round((rectPos.x + dx) / 50) * 50;
-                newY = Math.round((rectPos.y + dy) / 50) * 50;
+                newX = Math.round((rectPos.x + dx) / 20) * 20;
+                newY = Math.round((rectPos.y + dy) / 20) * 20;
                 
 
                 selectedRect.setAttribute('x', newX);
@@ -175,12 +176,12 @@
 
                 lines.forEach(function(line) {
                     if (line.getAttribute('fromx') === rectId) {
-                        line.setAttribute('x1', newX + 25);
-                        line.setAttribute('y1', newY + 25);
+                        line.setAttribute('x1', newX + 30);
+                        line.setAttribute('y1', newY + 30);
                     }
                     if (line.getAttribute('tox') === rectId) {
-                        line.setAttribute('x2', newX + 25);
-                        line.setAttribute('y2', newY + 25);
+                        line.setAttribute('x2', newX + 30);
+                        line.setAttribute('y2', newY + 30);
                     }
                 });
 

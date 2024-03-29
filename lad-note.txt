@@ -1,0 +1,1 @@
+git add . && git commit -m've hinh, ve cac duong noi, zoom,  move ok' && git push
