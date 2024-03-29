@@ -89,7 +89,7 @@ foreach ($m1 AS $file){
 
     if(strstr($file, '.html') || strstr($file, '.htm')){
         $pathName = str_replace(__DIR__, "", $file);
-        output(__DIR__."/index.html", "<a target='_blank' href='/demo_web$pathName'> $pathName </a><br>");
+        output(__DIR__."/index.html", "<a target='_blank' href='/svg-demo-01$pathName'> $pathName </a><br>");
     }
 
 }
