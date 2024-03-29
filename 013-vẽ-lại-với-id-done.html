@@ -137,6 +137,7 @@
 
         svg.addEventListener('mousemove', function(e) {
 
+            //Nếu đang vẽ hình chữ nhật
             if (isDrawing) {
                 console.log('drawing2...', startDrawPos);
                 var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
@@ -148,14 +149,25 @@
                 return;
             }
 
+            //Nếu không phải là di chuyển hình chữ nhật thì return
             if (!isMouseDown) return;
             
             var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+
+            //Nếu đang di chuyển hình chữ nhật
             if (selectedRect) {
                 var dx = (e.clientX / svg.clientWidth * viewBox[2] + viewBox[0]) - mouseDownPos.x;
                 var dy = (e.clientY / svg.clientHeight * viewBox[3] + viewBox[1]) - mouseDownPos.y;
-                var newX = Math.round((rectPos.x + dx) / 50) * 50;
-                var newY = Math.round((rectPos.y + dy) / 50) * 50;
+                
+                
+                var newX = rectPos.x + dx;
+                var newY = rectPos.y + dy;
+
+                //Làm tròn vị trí theo grid vuông
+                newX = Math.round((rectPos.x + dx) / 50) * 50;
+                newY = Math.round((rectPos.y + dy) / 50) * 50;
+                
+
                 selectedRect.setAttribute('x', newX);
                 selectedRect.setAttribute('y', newY);
 
@@ -172,7 +184,9 @@
                     }
                 });
 
-            } else {
+            } else 
+            //Nếu đang di chuyển viewbox
+            {
                 var dx = (e.clientX - mouseDownPos.x) / svg.clientWidth * viewBox[2];
                 var dy = (e.clientY - mouseDownPos.y) / svg.clientHeight * viewBox[3];
                 viewBox[0] = viewBoxPos.x - dx;

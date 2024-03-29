@@ -1,7 +1,0 @@
-<!--     
-    Dùng d3.js Vẽ các hình chữ nhật bằng chuột,
-    khi chuột hover qua hình, thì biến thành bàn tay để di chuyển được hình đó,
-    nhấn Ctrl và click vào 2 hình chữ nhật để vẽ đường thẳng nối giữa 2 hình chữ nhật đó.
-    con lăn chuột sẽ phóng to/thu nhỏ hình chữ nhật và đường thẳng, theo đúng tỷ lệ
--->
-
