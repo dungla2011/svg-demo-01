@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <svg id="mySVG" width="500" height="500" viewBox="0 0 500 500" style="border:1px solid black;">
+        <rect id="rect1" x="50" y="50" width="50" height="50" fill="blue" />
+        <rect id="rect2" x="150" y="50" width="50" height="50" fill="red" />
+        <rect id="rect3" x="250" y="50" width="50" height="50" fill="green" />
+        <line id="line1" x1="50" y1="50" x2="150" y2="50" stroke="black" />
+        <line id="line2" x1="150" y1="50" x2="250" y2="50" stroke="black" />
+    </svg>
+
+    <script>
+        var svg = document.getElementById('mySVG');
+        var rects = Array.from(svg.getElementsByTagName('rect'));
+        var lines = Array.from(svg.getElementsByTagName('line'));
+
+        var isMouseDown = false;
+        var mouseDownPos = { x: 0, y: 0 };
+        var rectPos = { x: 0, y: 0 };
+        var selectedRect = null;
+        var viewBoxPos = { x: 0, y: 0 };
+
+        var isDrawing = false;
+        var startDrawPos = { x: 0, y: 0 };
+        var newRect = null;
+
+        rects.forEach(function(rect, index) {
+            rect.addEventListener('mousedown', function(e) {
+                if (e.ctrlKey) {
+                    isMouseDown = true;
+                    var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+                    mouseDownPos = { x: e.clientX / svg.clientWidth * viewBox[2] + viewBox[0], y: e.clientY / svg.clientHeight * viewBox[3] + viewBox[1] };
+                    rectPos = { x: parseFloat(rect.getAttribute('x')), y: parseFloat(rect.getAttribute('y')) };
+                    selectedRect = rect;
+                }
+            });
+        });
+
+        svg.addEventListener('mousedown', function(e) {
+            if (e.shiftKey) {
+                
+                isDrawing = true;
+                var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+                startDrawPos = { x: e.clientX / svg.clientWidth * viewBox[2] + viewBox[0], y: e.clientY / svg.clientHeight * viewBox[3] + viewBox[1] };
+
+                console.log('drawing...', startDrawPos);
+
+                newRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                newRect.setAttribute('x', startDrawPos.x);
+                newRect.setAttribute('y', startDrawPos.y);
+                newRect.setAttribute('width', 10);
+                newRect.setAttribute('height', 10);
+                newRect.setAttribute('fill', 'blue');
+                svg.appendChild(newRect);
+
+                newRect.addEventListener('mousedown', function(e) {
+                if (e.ctrlKey) {
+                    isMouseDown = true;
+                    var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+                    mouseDownPos = { x: e.clientX / svg.clientWidth * viewBox[2] + viewBox[0], y: e.clientY / svg.clientHeight * viewBox[3] + viewBox[1] };
+                    rectPos = { x: parseFloat(newRect.getAttribute('x')), y: parseFloat(newRect.getAttribute('y')) };
+                    selectedRect = newRect;
+                }
+            });
+
+            }
+            else if (!e.ctrlKey) {
+                isMouseDown = true;
+                var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+                mouseDownPos = { x: e.clientX, y: e.clientY };
+                viewBoxPos = { x: viewBox[0], y: viewBox[1] };
+            }
+        });
+
+        svg.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            var scale = 1 - e.deltaY / 500;
+            var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+            var mouseX = e.clientX / svg.clientWidth * viewBox[2] + viewBox[0];
+            var mouseY = e.clientY / svg.clientHeight * viewBox[3] + viewBox[1];
+            viewBox[2] *= scale;
+            viewBox[3] *= scale;
+            viewBox[0] = mouseX - e.clientX / svg.clientWidth * viewBox[2];
+            viewBox[1] = mouseY - e.clientY / svg.clientHeight * viewBox[3];
+            svg.setAttribute('viewBox', viewBox.join(' '));
+        });
+
+        svg.addEventListener('mousemove', function(e) {
+
+            if (isDrawing) {
+                console.log('drawing2...', startDrawPos);
+                var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+                var currentPos = { x: e.clientX / svg.clientWidth * viewBox[2] + viewBox[0], y: e.clientY / svg.clientHeight * viewBox[3] + viewBox[1] };
+                newRect.setAttribute('width', Math.abs(currentPos.x - startDrawPos.x));
+                newRect.setAttribute('height', Math.abs(currentPos.y - startDrawPos.y));
+                newRect.setAttribute('x', Math.min(currentPos.x, startDrawPos.x));
+                newRect.setAttribute('y', Math.min(currentPos.y, startDrawPos.y));
+                return;
+            }
+
+            if (!isMouseDown) return;
+            
+            var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+            if (selectedRect) {
+                var dx = (e.clientX / svg.clientWidth * viewBox[2] + viewBox[0]) - mouseDownPos.x;
+                var dy = (e.clientY / svg.clientHeight * viewBox[3] + viewBox[1]) - mouseDownPos.y;
+                var newX = Math.round((rectPos.x + dx) / 50) * 50;
+                var newY = Math.round((rectPos.y + dy) / 50) * 50;
+                selectedRect.setAttribute('x', newX);
+                selectedRect.setAttribute('y', newY);
+                var index = rects.indexOf(selectedRect);
+                console.log('indexx = ', index);
+                if (index > 0) {
+                    lines[index - 1].setAttribute('x2', newX + 25);
+                    lines[index - 1].setAttribute('y2', newY + 25);
+
+                }
+                if (index >= 0)
+                if (index < rects.length - 1) {
+                        lines[index].setAttribute('x1', newX + 25);
+                        lines[index].setAttribute('y1', newY + 25);
+                }
+                
+            } else {
+                var dx = (e.clientX - mouseDownPos.x) / svg.clientWidth * viewBox[2];
+                var dy = (e.clientY - mouseDownPos.y) / svg.clientHeight * viewBox[3];
+                viewBox[0] = viewBoxPos.x - dx;
+                viewBox[1] = viewBoxPos.y - dy;
+                svg.setAttribute('viewBox', viewBox.join(' '));
+            }
+        });
+
+        svg.addEventListener('mouseup', function(e) {
+            isMouseDown = false;
+            selectedRect = null;
+            isDrawing = false;
+        });
+
+        svg.addEventListener('mouseleave', function(e) {
+            isMouseDown = false;
+            selectedRect = null;
+            isDrawing = false;
+        });
+    </script>
+</body>
+</html>

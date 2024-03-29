@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <svg id="mySVG" width="500" height="500" style="border:1px solid black;">
+        <rect id="rect1" x="50" y="50" width="50" height="50" fill="blue" />
+        <rect id="rect2" x="150" y="50" width="50" height="50" fill="red" />
+        <rect id="rect3" x="250" y="50" width="50" height="50" fill="green" />
+    </svg>
+
+    <script>
+        var svg = document.getElementById('mySVG');
+        var rects = Array.from(svg.getElementsByTagName('rect'));
+
+        var isMouseDown = false;
+        var mouseDownPos = { x: 0, y: 0 };
+        var rectPos = [];
+
+        svg.addEventListener('mousedown', function(e) {
+            isMouseDown = true;
+            mouseDownPos = { x: e.clientX, y: e.clientY };
+            rectPos = rects.map(function(rect) {
+                return { x: parseFloat(rect.getAttribute('x')), y: parseFloat(rect.getAttribute('y')) };
+            });
+        });
+
+        svg.addEventListener('mousemove', function(e) {
+            if (!isMouseDown) return;
+            var dx = e.clientX - mouseDownPos.x;
+            var dy = e.clientY - mouseDownPos.y;
+            rects.forEach(function(rect, i) {
+                rect.setAttribute('x', rectPos[i].x + dx);
+                rect.setAttribute('y', rectPos[i].y + dy);
+            });
+        });
+
+        svg.addEventListener('mouseup', function(e) {
+            isMouseDown = false;
+        });
+
+        svg.addEventListener('mouseleave', function(e) {
+            isMouseDown = false;
+        });
+    </script>
+</body>
+</html>

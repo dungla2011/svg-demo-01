@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .movable {
+            cursor: grab;
+        }
+        .movable:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body>
+    <svg id="canvas" style="width: 800px; height: 600px; border: 1px solid black;"></svg>
+
+    <script>
+        var canvas = document.getElementById("canvas");
+        var isDrawing = false;
+        var isMoving = false;
+        var currentRect = null;
+        var selectedElement, offset;
+        var firstElement = null;
+        let idx = 0;
+
+        canvas.addEventListener("mousedown", function(e) {
+            if (e.ctrlKey && e.target.classList.contains("movable")) {
+                if (firstElement == null) {
+                    firstElement = e.target;
+                } else {
+                    var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', Number(firstElement.getAttribute('x')) + Number(firstElement.getAttribute('width')) / 2);
+                    line.setAttribute('y1', Number(firstElement.getAttribute('y')) + Number(firstElement.getAttribute('height')) / 2);
+                    line.setAttribute('x2', Number(e.target.getAttribute('x')) + Number(e.target.getAttribute('width')) / 2);
+                    line.setAttribute('y2', Number(e.target.getAttribute('y')) + Number(e.target.getAttribute('height')) / 2);
+                    line.setAttribute('stroke', 'black');
+                    line.setAttribute('fromx', firstElement.getAttribute('idx'));
+                    line.setAttribute('tox', e.target.getAttribute('idx'));
+                    canvas.appendChild(line);
+                    firstElement = null;
+                }
+            } else if (e.target == canvas && !isMoving) {
+
+                //ve hinh chu nhat
+                isDrawing = true;
+                var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', e.offsetX);
+                rect.setAttribute('y', e.offsetY);
+                rect.setAttribute('width', 1);
+                rect.setAttribute('height', 1);
+                rect.setAttribute('fill', 'red');
+                rect.setAttribute('idx', idx++);
+                rect.classList.add('movable');
+
+                canvas.appendChild(rect);
+                currentRect = rect;
+            } else if (e.target.classList.contains("movable")) {
+                isMoving = true;
+                selectedElement = e.target;
+                offset = { x: e.offsetX - parseFloat(selectedElement.getAttribute('x')), y: e.offsetY - parseFloat(selectedElement.getAttribute('y')) };
+            }
+        });
+
+        canvas.addEventListener("mousemove", function(e) {
+            if (isDrawing) {
+                currentRect.setAttribute('width', e.offsetX - parseFloat(currentRect.getAttribute('x')));
+                currentRect.setAttribute('height', e.offsetY - parseFloat(currentRect.getAttribute('y')));
+            } else if (isMoving) {
+                e.preventDefault();
+                selectedElement.setAttribute('x', e.offsetX - offset.x);
+                selectedElement.setAttribute('y', e.offsetY - offset.y);
+
+                //update line have fromx or tox = idx
+                let lines = document.querySelectorAll('line');
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].getAttribute('fromx') == selectedElement.getAttribute('idx')) {
+                        lines[i].setAttribute('x1', Number(selectedElement.getAttribute('x')) + Number(selectedElement.getAttribute('width')) / 2);
+                        lines[i].setAttribute('y1', Number(selectedElement.getAttribute('y')) + Number(selectedElement.getAttribute('height')) / 2);
+                    }
+                    if (lines[i].getAttribute('tox') == selectedElement.getAttribute('idx')) {
+                        lines[i].setAttribute('x2', Number(selectedElement.getAttribute('x')) + Number(selectedElement.getAttribute('width')) / 2);
+                        lines[i].setAttribute('y2', Number(selectedElement.getAttribute('y')) + Number(selectedElement.getAttribute('height')) / 2);
+                    }
+                }
+            }
+        });
+
+        canvas.addEventListener("mouseup", function(e) {
+            if (isMoving) {
+                selectedElement.setAttribute('x', e.offsetX - offset.x);
+                selectedElement.setAttribute('y', e.offsetY - offset.y);
+            }
+            isDrawing = false;
+            isMoving = false;
+        });
+    </script>
+</body>
+</html>

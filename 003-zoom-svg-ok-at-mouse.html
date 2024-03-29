@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<svg id="mySVG" width="500" height="500" style="border:1px solid black;">
+  <rect id="rect1" x="50" y="50" width="100" height="100" style="fill:blue;" />
+  <rect id="rect2" x="200" y="200" width="100" height="100" style="fill:red;" />
+</svg>
+
+<script>
+  var svg = document.getElementById('mySVG');
+  var rect1 = document.getElementById('rect1');
+  var rect2 = document.getElementById('rect2');
+  var zoomLevel = 1;
+
+  svg.addEventListener('wheel', function(e) {
+    e.preventDefault();
+
+    // Zoom in
+    if (e.deltaY < 0) {
+      zoomLevel += 0.1;
+    }
+
+    // Zoom out
+    else {
+      zoomLevel -= 0.1;
+    }
+
+    // Calculate mouse position
+    var x = e.clientX - svg.getBoundingClientRect().left;
+    var y = e.clientY - svg.getBoundingClientRect().top;
+
+    // Apply zoom at mouse position
+    rect1.setAttribute('transform', 'translate(' + (-x*zoomLevel+x) + ',' + (-y*zoomLevel+y) + ') scale(' + zoomLevel + ')');
+    rect2.setAttribute('transform', 'translate(' + (-x*zoomLevel+x) + ',' + (-y*zoomLevel+y) + ') scale(' + zoomLevel + ')');
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <svg id="mySVG" width="500" height="500" viewBox="0 0 500 500" style="border:1px solid black;">
+        <rect id="rect1" x="50" y="50" width="50" height="50" fill="blue" />
+        <rect id="rect2" x="150" y="50" width="50" height="50" fill="red" />
+        <rect id="rect3" x="250" y="50" width="50" height="50" fill="green" />
+    </svg>
+
+    <script>
+        var svg = document.getElementById('mySVG');
+        var rects = Array.from(svg.getElementsByTagName('rect'));
+
+        var isMouseDown = false;
+        var mouseDownPos = { x: 0, y: 0 };
+        var rectPos = { x: 0, y: 0 };
+        var selectedRect = null;
+        var viewBoxPos = { x: 0, y: 0 };
+
+        rects.forEach(function(rect) {
+            rect.addEventListener('mousedown', function(e) {
+                if (e.ctrlKey) {
+                    isMouseDown = true;
+                    var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+                    mouseDownPos = { x: e.clientX / svg.clientWidth * viewBox[2] + viewBox[0], y: e.clientY / svg.clientHeight * viewBox[3] + viewBox[1] };
+                    rectPos = { x: parseFloat(rect.getAttribute('x')), y: parseFloat(rect.getAttribute('y')) };
+                    selectedRect = rect;
+                }
+            });
+        });
+
+        svg.addEventListener('mousedown', function(e) {
+            if (!e.ctrlKey) {
+                isMouseDown = true;
+                var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+                mouseDownPos = { x: e.clientX, y: e.clientY };
+                viewBoxPos = { x: viewBox[0], y: viewBox[1] };
+            }
+        });
+
+        svg.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            var scale = 1 - e.deltaY / 500;
+            var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+            var mouseX = e.clientX / svg.clientWidth * viewBox[2] + viewBox[0];
+            var mouseY = e.clientY / svg.clientHeight * viewBox[3] + viewBox[1];
+            viewBox[2] *= scale;
+            viewBox[3] *= scale;
+            viewBox[0] = mouseX - e.clientX / svg.clientWidth * viewBox[2];
+            viewBox[1] = mouseY - e.clientY / svg.clientHeight * viewBox[3];
+            svg.setAttribute('viewBox', viewBox.join(' '));
+        });
+
+        svg.addEventListener('mousemove', function(e) {
+            if (!isMouseDown) return;
+            var viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+            if (selectedRect) {
+                var dx = (e.clientX / svg.clientWidth * viewBox[2] + viewBox[0]) - mouseDownPos.x;
+                var dy = (e.clientY / svg.clientHeight * viewBox[3] + viewBox[1]) - mouseDownPos.y;
+                selectedRect.setAttribute('x', Math.round((rectPos.x + dx) / 50) * 50);
+                selectedRect.setAttribute('y', Math.round((rectPos.y + dy) / 50) * 50);
+            } else {
+                var dx = (e.clientX - mouseDownPos.x) / svg.clientWidth * viewBox[2];
+                var dy = (e.clientY - mouseDownPos.y) / svg.clientHeight * viewBox[3];
+                viewBox[0] = viewBoxPos.x - dx;
+                viewBox[1] = viewBoxPos.y - dy;
+                svg.setAttribute('viewBox', viewBox.join(' '));
+            }
+        });
+
+        svg.addEventListener('mouseup', function(e) {
+            isMouseDown = false;
+            selectedRect = null;
+        });
+
+        svg.addEventListener('mouseleave', function(e) {
+            isMouseDown = false;
+            selectedRect = null;
+        });
+    </script>
+
+<p>
+    SVG này chứa ba hình chữ nhật. Bạn có thể nhấp và kéo một hình chữ nhật để di chuyển nó. Nếu bạn giữ phím Ctrl khi kéo, bạn sẽ di chuyển hình chữ nhật đã chọn. Nếu bạn không giữ phím Ctrl, bạn sẽ di chuyển toàn bộ SVG. Bạn cũng có thể phóng to và thu nhỏ bằng cách cuộn bánh xe chuột. Việc phóng to sẽ được tập trung tại vị trí con chuột.
+    <br>
+    Khi di chuyển ô nhỏ phải nằm trong lưới 50x50
+</p>
+</body>
+</html>
